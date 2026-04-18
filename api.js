@@ -5,7 +5,7 @@ const api = {
   getSocketUrl: () => IS_LOCAL ? 'http://localhost:3000' : window.location.origin,
   getToken: () => localStorage.getItem('thodung_token'),
   setToken: (token) => localStorage.setItem('thodung_token', token),
-  
+
   async request(endpoint, options = {}) {
     const headers = { 'Content-Type': 'application/json' };
     const token = this.getToken();
@@ -15,7 +15,7 @@ const api = {
       ...options,
       headers: { ...headers, ...options.headers }
     });
-    
+
     if (!res.ok) {
       const error = await res.json();
       throw new Error(error.error || 'API Error');
@@ -24,10 +24,26 @@ const api = {
   },
 
   auth: {
-    verify: (phone, role) => api.request('/auth/verify', {
-      method: 'POST',
-      body: JSON.stringify({ phone, role })
-    }),
+    verify: async (phone, role) => {
+      // ------ TẠM THỜI BYPASS API ĐỂ TEST GIAO DIỆN ------
+      // Giả lập thời gian chờ của mạng
+      await new Promise(resolve => setTimeout(resolve, 800));
+      return {
+        token: 'mock-token-' + Date.now(),
+        user: {
+          id: 'TD-' + Math.floor(Math.random() * 10000),
+          phone: phone,
+          role: role.toLowerCase()
+        }
+      };
+
+      /* ----- SAU NÀY MUỐN MỞ LẠI HÃY UNCOMMENT ĐOẠN NÀY -----
+      return api.request('/auth/verify', {
+        method: 'POST',
+        body: JSON.stringify({ phone, role })
+      });
+      */
+    },
   },
 
   user: {
