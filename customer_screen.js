@@ -9,7 +9,7 @@ function renderCustomerHome() {
   const banners = MOCK_DATA.banners;
   const categories = MOCK_DATA.categories;
   const topWorkers = MOCK_DATA.workers.slice(0, 3);
-
+  
   return `
     <div class="screen active" id="screen-customer-home" style="background:var(--bg-secondary); min-height:100vh; display:flex; flex-direction:column;">
       <div class="scroll-content pb-nav" style="flex:1; overflow-y:auto;">
@@ -20,8 +20,8 @@ function renderCustomerHome() {
           
           <div class="home-location" style="display:flex; align-items:center; gap:6px; margin-bottom:16px;">
             <i class="fas fa-map-marker-alt" style="font-size:13px; color:rgba(255,255,255,0.9);"></i>
-            <span class="location-text" style="font-size:13px; color:rgba(255,255,255,0.9); flex:1;">123 Lê Lợi, Quận 1, TP.HCM</span>
-            <span style="font-size:12px; color:rgba(255,255,255,0.75); cursor:pointer; text-decoration:underline;" onclick="showToast('Tính năng đang phát triển 🔨', 'info')">Đổi</span>
+            <span class="location-text" style="font-size:13px; color:rgba(255,255,255,0.9); flex:1;">${user.address || '123 Lê Lợi, Quận 1, TP.HCM'}</span>
+            <span style="font-size:12px; color:rgba(255,255,255,0.75); cursor:pointer; text-decoration:underline;" onclick="showAddressDialog()">Đổi</span>
           </div>
           
           <div class="home-greeting" style="display:flex; align-items:center; justify-content:space-between;">
@@ -51,17 +51,19 @@ function renderCustomerHome() {
         
         <!-- Banner Slider -->
         <div style="margin:-4px 16px 20px; position:relative;">
-          <div id="banner-track" style="display:flex; transition:transform 0.4s ease; border-radius:var(--radius-lg); overflow:hidden;">
-            ${banners.map((b, i) => buildBannerSlide(b, i)).join('')}
+          <div class="banner-viewport" style="border-radius:var(--radius-lg); overflow:hidden;">
+            <div id="banner-track" style="display:flex; transition:transform 0.4s ease; width:100%;">
+              ${banners.map((b, i) => buildBannerSlide(b, i)).join('')}
+            </div>
           </div>
           <div id="banner-dots" style="display:flex; justify-content:center; gap:4px; margin-top:10px;">
-            ${banners.map((_, i) => `<div style="width:${i === 0 ? '20px' : '6px'}; height:6px; border-radius:3px; background:${i === 0 ? 'var(--primary)' : 'var(--border)'}; transition:all 0.3s ease;" data-dot="${i}"></div>`).join('')}
+            ${banners.map((_, i) => `<div style="width:${i===0?'20px':'6px'}; height:6px; border-radius:3px; background:${i===0?'var(--primary)':'var(--border)'}; transition:all 0.3s ease;" data-dot="${i}"></div>`).join('')}
           </div>
         </div>
         
         <!-- Reward Summary Bar -->
         <div style="margin:0 16px 20px;">
-          <div style="background:linear-gradient(90deg, #1A1A2E 0%, #2D2D44 100%); border-radius:var(--radius-md); padding:12px 16px; display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="navigateCustomer('profile')">
+          <div style="background:linear-gradient(90deg, #1A1A2E 0%, #2D2D44 100%); border-radius:var(--radius-md); padding:12px 16px; display:flex; align-items:center; gap:10px; cursor:pointer;" onclick="showScreen('customer-loyalty')">
             <div style="width:36px; height:36px; background:var(--primary); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">⭐</div>
             <div style="flex:1;">
               <div style="font-size:12px; color:rgba(255,255,255,0.7); margin-bottom:1px;">Điểm thưởng của bạn</div>
@@ -96,7 +98,7 @@ function renderCustomerHome() {
         <!-- Near Workers -->
         <div style="margin-bottom:20px;">
           <div class="section-header" style="display:flex; align-items:center; justify-content:space-between; margin:0 16px 12px;">
-            <h2 class="section-title" style="font-size:16px; font-weight:700; color:var(--text-primary);">Thợ gần bạn <span style="font-size:12px; color:var(--success); font-weight:500;">● ${topWorkers.filter(w => w.isOnline).length} đang sẵn sàng</span></h2>
+            <h2 class="section-title" style="font-size:16px; font-weight:700; color:var(--text-primary);">Thợ gần bạn <span style="font-size:12px; color:var(--success); font-weight:500;">● ${topWorkers.filter(w=>w.isOnline).length} đang sẵn sàng</span></h2>
             <a class="section-link" style="font-size:13px; color:var(--primary); font-weight:600; cursor:pointer;" onclick="showScreen('customer-workers')">Xem thêm</a>
           </div>
           
@@ -123,14 +125,14 @@ function renderCustomerHome() {
         </div>
         
         <!-- Price List Preview -->
-        <div style="margin-bottom:80px;">
+        <div style="margin-bottom:24px;">
           <div class="section-header" style="display:flex; align-items:center; justify-content:space-between; margin:0 16px 12px;">
             <h2 class="section-title" style="font-size:16px; font-weight:700; color:var(--text-primary);">Bảng giá dịch vụ</h2>
             <a class="section-link" style="font-size:13px; color:var(--primary); font-weight:600; cursor:pointer;" onclick="navigateCustomer('booking')">Xem tất cả</a>
           </div>
           
           <div class="service-list" style="padding:0 16px; display:flex; flex-direction:column; gap:10px;">
-            ${MOCK_DATA.services.slice(0, 4).map(svc => `
+            ${MOCK_DATA.services.slice(0,4).map(svc => `
               <div class="service-card" onclick="bookService('${svc.id}')" style="background:var(--bg-primary); border-radius:var(--radius-md); padding:12px; display:flex; align-items:center; gap:12px; box-shadow:var(--shadow-sm); cursor:pointer; border:1.5px solid transparent;">
                 <div style="width:56px; height:56px; border-radius:var(--radius-md); background:var(--primary-light); display:flex; align-items:center; justify-content:center; font-size:26px; flex-shrink:0;">${svc.icon}</div>
                 <div style="flex:1; min-width:0;">
@@ -163,7 +165,7 @@ function renderCustomerBooking() {
   const state = AppState.customer;
   const selectedCat = state.selectedCategoryId;
   const filteredServices = selectedCat ? services.filter(s => s.category === selectedCat) : services;
-
+  
   return `
     <div class="screen active" id="screen-customer-booking" style="background:var(--bg-secondary); min-height:100vh; display:flex; flex-direction:column;">
       
@@ -185,7 +187,7 @@ function renderCustomerBooking() {
             Tất cả
           </button>
           ${categories.map(cat => `
-            <button onclick="filterCategory('${cat.id}')" style="display:flex; align-items:center; gap:5px; padding:6px 14px; border-radius:var(--radius-full); font-size:13px; font-weight:600; cursor:pointer; border:1.5px solid ${selectedCat === cat.id ? 'var(--primary)' : 'var(--border)'}; background:${selectedCat === cat.id ? 'var(--primary)' : 'transparent'}; color:${selectedCat === cat.id ? 'white' : 'var(--text-secondary)'}; white-space:nowrap; font-family:inherit; transition:all 0.2s;">
+            <button onclick="filterCategory('${cat.id}')" style="display:flex; align-items:center; gap:5px; padding:6px 14px; border-radius:var(--radius-full); font-size:13px; font-weight:600; cursor:pointer; border:1.5px solid ${selectedCat===cat.id ? 'var(--primary)' : 'var(--border)'}; background:${selectedCat===cat.id ? 'var(--primary)' : 'transparent'}; color:${selectedCat===cat.id ? 'white' : 'var(--text-secondary)'}; white-space:nowrap; font-family:inherit; transition:all 0.2s;">
               ${cat.icon} ${cat.name}
             </button>
           `).join('')}
@@ -207,7 +209,7 @@ function renderCustomerBooking() {
         <div style="display:flex; flex-direction:column; gap:12px;">
           ${filteredServices.map(svc => `
             <div onclick="bookService('${svc.id}')" style="background:white; border-radius:var(--radius-lg); overflow:hidden; box-shadow:var(--shadow-sm); cursor:pointer; transition:all 0.2s; border:1.5px solid transparent;">
-              <div style="background:${MOCK_DATA.categories.find(c => c.id === svc.category)?.color || '#f5f5f5'}; padding:20px; text-align:center; font-size:48px;">
+              <div style="background:${MOCK_DATA.categories.find(c=>c.id===svc.category)?.color || '#f5f5f5'}; padding:20px; text-align:center; font-size:48px;">
                 ${svc.icon}
               </div>
               <div style="padding:14px;">
@@ -246,11 +248,11 @@ function renderBookingForm() {
   const booking = AppState.customer.booking;
   const service = booking.service || MOCK_DATA.services[0];
   const dates = getCurrentDates();
-
+  
   const timeSlots = ['07:00', '08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
   const selectedDate = booking.date || dates[0].full;
   const selectedTime = booking.timeSlot || '09:00';
-
+  
   return `
     <div class="screen active" id="screen-booking-form" style="background:var(--bg-secondary); min-height:100vh; display:flex; flex-direction:column;">
       
@@ -259,12 +261,12 @@ function renderBookingForm() {
       <!-- Step indicator -->
       <div class="step-flow" style="display:flex; align-items:center; padding:12px 16px; background:white; border-bottom:1px solid var(--border-light);">
         ${['Dịch vụ', 'Thời gian', 'Xác nhận'].map((label, i) => `
-          ${i > 0 ? `<div style="flex:1; height:1px; background:${i <= 1 ? 'var(--primary)' : 'var(--border)'}; margin:0 4px; margin-bottom:18px;"></div>` : ''}
+          ${i > 0 ? `<div style="flex:1; height:1px; background:${i<=1?'var(--primary)':'var(--border)'}; margin:0 4px; margin-bottom:18px;"></div>` : ''}
           <div style="display:flex; flex-direction:column; align-items:center;">
-            <div style="width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; background:${i === 0 ? 'var(--primary)' : i === 1 ? 'var(--primary)' : 'var(--border)'}; color:${i < 2 ? 'white' : 'var(--text-tertiary)'}; border:2px solid ${i < 2 ? 'var(--primary)' : 'var(--border)'};">
-              ${i === 0 ? '<i class="fas fa-check"></i>' : i + 1}
+            <div style="width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; background:${i===0?'var(--primary)':i===1?'var(--primary)':'var(--border)'}; color:${i<2?'white':'var(--text-tertiary)'}; border:2px solid ${i<2?'var(--primary)':'var(--border)'};">
+              ${i===0 ? '<i class="fas fa-check"></i>' : i+1}
             </div>
-            <span style="font-size:10px; margin-top:4px; color:${i < 2 ? 'var(--primary)' : 'var(--text-tertiary)'}; font-weight:${i < 2 ? '700' : '500'};">${label}</span>
+            <span style="font-size:10px; margin-top:4px; color:${i<2?'var(--primary)':'var(--text-tertiary)'}; font-weight:${i<2?'700':'500'};">${label}</span>
           </div>
         `).join('')}
       </div>
@@ -291,9 +293,9 @@ function renderBookingForm() {
           </h3>
           <div id="date-picker" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; -webkit-overflow-scrolling:touch;">
             ${dates.map(d => `
-              <div onclick="selectBookingDate('${d.full}')" style="flex-shrink:0; padding:10px 14px; border:1.5px solid ${d.full === selectedDate ? 'var(--primary)' : 'var(--border)'}; border-radius:var(--radius-md); text-align:center; cursor:pointer; background:${d.full === selectedDate ? 'var(--primary)' : 'transparent'}; transition:all 0.2s;" data-date="${d.full}">
-                <div style="font-size:11px; color:${d.full === selectedDate ? 'rgba(255,255,255,0.85)' : 'var(--text-tertiary)'}; margin-bottom:2px;">${d.day}</div>
-                <div style="font-size:18px; font-weight:700; color:${d.full === selectedDate ? 'white' : 'var(--text-primary)'};">${d.date}</div>
+              <div onclick="selectBookingDate('${d.full}')" style="flex-shrink:0; padding:10px 14px; border:1.5px solid ${d.full===selectedDate?'var(--primary)':'var(--border)'}; border-radius:var(--radius-md); text-align:center; cursor:pointer; background:${d.full===selectedDate?'var(--primary)':'transparent'}; transition:all 0.2s;" data-date="${d.full}">
+                <div style="font-size:11px; color:${d.full===selectedDate?'rgba(255,255,255,0.85)':'var(--text-tertiary)'}; margin-bottom:2px;">${d.day}</div>
+                <div style="font-size:18px; font-weight:700; color:${d.full===selectedDate?'white':'var(--text-primary)'};">${d.date}</div>
               </div>
             `).join('')}
           </div>
@@ -306,7 +308,7 @@ function renderBookingForm() {
           </h3>
           <div id="time-slots" style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
             ${timeSlots.map(t => `
-              <div onclick="selectBookingTime('${t}')" style="padding:8px 4px; border:1.5px solid ${t === selectedTime ? 'var(--primary)' : 'var(--border)'}; border-radius:var(--radius-sm); text-align:center; cursor:pointer; font-size:13px; font-weight:${t === selectedTime ? '700' : '500'}; color:${t === selectedTime ? 'var(--primary)' : 'var(--text-secondary)'}; background:${t === selectedTime ? 'var(--primary-light)' : 'transparent'}; transition:all 0.2s;" data-time="${t}">
+              <div onclick="selectBookingTime('${t}')" style="padding:8px 4px; border:1.5px solid ${t===selectedTime?'var(--primary)':'var(--border)'}; border-radius:var(--radius-sm); text-align:center; cursor:pointer; font-size:13px; font-weight:${t===selectedTime?'700':'500'}; color:${t===selectedTime?'var(--primary)':'var(--text-secondary)'}; background:${t===selectedTime?'var(--primary-light)':'transparent'}; transition:all 0.2s;" data-time="${t}">
                 ${t}
               </div>
             `).join('')}
@@ -326,7 +328,7 @@ function renderBookingForm() {
           </div>
           <div style="margin-top:8px; display:flex; gap:6px;">
             ${['Nhà riêng', 'Văn phòng', 'Khác'].map((t, i) => `
-              <span onclick="selectAddressType(this, '${t}')" style="padding:5px 12px; border:1.5px solid ${i === 0 ? 'var(--primary)' : 'var(--border)'}; border-radius:var(--radius-full); font-size:12px; font-weight:600; color:${i === 0 ? 'var(--primary)' : 'var(--text-secondary)'}; cursor:pointer; transition:all 0.2s;">${t}</span>
+              <span onclick="selectAddressType(this, '${t}')" style="padding:5px 12px; border:1.5px solid ${i===0?'var(--primary)':'var(--border)'}; border-radius:var(--radius-full); font-size:12px; font-weight:600; color:${i===0?'var(--primary)':'var(--text-secondary)'}; cursor:pointer; transition:all 0.2s;">${t}</span>
             `).join('')}
           </div>
         </div>
@@ -401,7 +403,7 @@ function renderBookingForm() {
 function renderBookingConfirm() {
   const booking = AppState.customer.booking;
   const service = booking.service || MOCK_DATA.services[0];
-
+  
   return `
     <div class="screen active" id="screen-booking-confirm" style="background:var(--bg-secondary); min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:32px;">
       
@@ -418,14 +420,14 @@ function renderBookingConfirm() {
       <div style="background:white; border-radius:var(--radius-xl); padding:20px; width:100%; max-width:340px; box-shadow:var(--shadow-md); margin-bottom:24px;">
         <div style="text-align:center; margin-bottom:16px; padding-bottom:16px; border-bottom:1px dashed var(--border);">
           <span style="font-size:13px; color:var(--text-tertiary);">Mã đơn hàng</span>
-          <div style="font-size:22px; font-weight:800; color:var(--primary); letter-spacing:1px;">#TD-10${Math.floor(260 + Math.random() * 10)}</div>
+          <div style="font-size:22px; font-weight:800; color:var(--primary); letter-spacing:1px;">#TD-10${Math.floor(260 + Math.random()*10)}</div>
         </div>
         ${[
-      ['Dịch vụ', service.name],
-      ['Thời gian', `${booking.timeSlot || '09:00'} - ${booking.date || 'Hôm nay'}`],
-      ['Địa chỉ', booking.address || MOCK_DATA.customer.address],
-      ['Tổng tiền', formatCurrency(service.basePrice)],
-    ].map(([label, val]) => `
+          ['Dịch vụ', service.name],
+          ['Thời gian', `${booking.timeSlot || '09:00'} - ${booking.date || 'Hôm nay'}`],
+          ['Địa chỉ', booking.address || MOCK_DATA.customer.address],
+          ['Tổng tiền', formatCurrency(service.basePrice)],
+        ].map(([label, val]) => `
           <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:14px;">
             <span style="color:var(--text-tertiary);">${label}</span>
             <span style="font-weight:600; color:var(--text-primary); text-align:right; max-width:200px;">${val}</span>
@@ -442,7 +444,7 @@ function renderBookingConfirm() {
         <button class="btn btn-primary" onclick="navigateCustomer('orders')">
           <i class="fas fa-receipt"></i> Xem đơn hàng
         </button>
-        <button class="btn btn-outline" onclick="navigateCustomer('home')">
+        <button class="btn" style="background:rgba(30,31,54,0.06); color:var(--text-primary); font-weight:700; border:none;" onclick="navigateCustomer('home')">
           <i class="fas fa-home"></i> Về trang chủ
         </button>
       </div>
@@ -453,8 +455,12 @@ function renderBookingConfirm() {
 
 // ---- ORDERS ----
 function renderCustomerOrders() {
-  const orders = AppState.customer.orders;
-
+  const filter = AppState.customer.filterStatus || 'all';
+  const allOrders = AppState.customer.orders;
+  const orders = filter === 'all' ? allOrders : allOrders.filter(o => 
+    filter === 'active' ? ['pending', 'confirmed', 'going', 'in-progress'].includes(o.status) : o.status === filter
+  );
+  
   return `
     <div class="screen active" id="screen-customer-orders" style="background:var(--bg-secondary); min-height:100vh; display:flex; flex-direction:column;">
       
@@ -462,8 +468,8 @@ function renderCustomerOrders() {
       
       <!-- Tab Bar -->
       <div style="display:flex; background:white; border-bottom:1px solid var(--border-light); position:sticky; top:56px; z-index:50;">
-        ${[['Tất cả', 'all'], ['Đang thực hiện', 'active'], ['Hoàn thành', 'completed'], ['Đã hủy', 'cancelled']].map(([label, val], i) => `
-          <button onclick="filterOrders('${val}', this)" style="flex:1; padding:12px 4px; text-align:center; font-size:12px; font-weight:600; color:${i === 0 ? 'var(--primary)' : 'var(--text-tertiary)'}; cursor:pointer; border:none; background:none; border-bottom:2px solid ${i === 0 ? 'var(--primary)' : 'transparent'}; font-family:inherit; transition:all 0.2s; white-space:nowrap;">
+        ${[['Tất cả', 'all'], ['Đang thực hiện', 'active'], ['Hoàn thành', 'completed'], ['Đã hủy', 'cancelled']].map(([label, val]) => `
+          <button onclick="filterOrders('${val}', this)" style="flex:1; padding:12px 4px; text-align:center; font-size:12px; font-weight:600; color:${filter===val?'var(--primary)':'var(--text-tertiary)'}; cursor:pointer; border:none; background:none; border-bottom:2px solid ${filter===val?'var(--primary)':'transparent'}; font-family:inherit; transition:all 0.2s; white-space:nowrap;">
             ${label}
           </button>
         `).join('')}
@@ -477,7 +483,7 @@ function renderCustomerOrders() {
             <div style="width:10px; height:10px; background:white; border-radius:50%; animation:pulse 1.5s infinite;"></div>
             <div style="flex:1; color:white;">
               <div style="font-size:12px; opacity:0.85;">Đơn đang thực hiện</div>
-              <div style="font-size:14px; font-weight:700;">${orders.find(o => o.status === 'in-progress')?.service || 'Sửa điện dân dụng'}</div>
+              <div style="font-size:14px; font-weight:700;">${orders.find(o=>o.status==='in-progress')?.service || 'Sửa điện dân dụng'}</div>
             </div>
             <i class="fas fa-chevron-right" style="color:rgba(255,255,255,0.8);"></i>
           </div>
@@ -507,7 +513,7 @@ function renderOrderDetail() {
   const orderId = AppState.customer.selectedOrderId;
   const order = MOCK_DATA.orders.find(o => o.id === orderId) || MOCK_DATA.orders[0];
   const worker = MOCK_DATA.workers.find(w => w.id === order.worker?.id) || MOCK_DATA.workers[0];
-
+  
   const steps = order.statusHistory || [
     { status: 'placed', time: '08:00', label: 'Đơn đã đặt', done: true },
     { status: 'confirmed', time: '08:05', label: 'Thợ xác nhận', done: true },
@@ -515,7 +521,7 @@ function renderOrderDetail() {
     { status: 'in-progress', time: '09:10', label: 'Đang thực hiện', active: order.status === 'in-progress' },
     { status: 'completed', time: '', label: 'Hoàn thành', done: order.status === 'completed' },
   ];
-
+  
   return `
     <div class="screen active" id="screen-order-detail" style="background:var(--bg-secondary); min-height:100vh; display:flex; flex-direction:column;">
       
@@ -561,13 +567,13 @@ function renderOrderDetail() {
           <div style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-tertiary); margin-bottom:16px;">Tiến độ</div>
           <div class="tracking-progress">
             ${steps.map((step, i) => `
-              <div class="tracking-step ${step.active ? 'active' : ''} ${step.done ? 'done' : ''}" style="display:flex; gap:12px; position:relative; padding-bottom:${i < steps.length - 1 ? '24px' : '0'};">
-                ${i < steps.length - 1 ? `<div style="position:absolute; left:17px; top:36px; bottom:0; width:1px; background:${step.done || step.active ? 'var(--primary)' : 'var(--border)'};"></div>` : ''}
-                <div style="width:36px; height:36px; border-radius:50%; background:${step.done ? 'var(--success)' : step.active ? 'var(--primary)' : 'var(--bg-secondary)'}; border:2px solid ${step.done ? 'var(--success)' : step.active ? 'var(--primary)' : 'var(--border)'}; display:flex; align-items:center; justify-content:center; font-size:14px; color:${step.done || step.active ? 'white' : 'var(--text-tertiary)'}; flex-shrink:0; z-index:1; ${step.active ? 'box-shadow:0 2px 8px rgba(255,123,0,0.35);' : ''}">
-                  <i class="fas ${step.done ? 'fa-check' : step.active ? 'fa-spinner fa-spin' : 'fa-circle'}" style="font-size:${step.active && !step.done ? '11px' : '12px'};"></i>
+              <div class="tracking-step ${step.active ? 'active' : ''} ${step.done ? 'done' : ''}" style="display:flex; gap:12px; position:relative; padding-bottom:${i < steps.length-1 ? '24px' : '0'};">
+                ${i < steps.length-1 ? `<div style="position:absolute; left:17px; top:36px; bottom:0; width:1px; background:${step.done||step.active?'var(--primary)':'var(--border)'};"></div>` : ''}
+                <div style="width:36px; height:36px; border-radius:50%; background:${step.done?'var(--success)':step.active?'var(--primary)':'var(--bg-secondary)'}; border:2px solid ${step.done?'var(--success)':step.active?'var(--primary)':'var(--border)'}; display:flex; align-items:center; justify-content:center; font-size:14px; color:${step.done||step.active?'white':'var(--text-tertiary)'}; flex-shrink:0; z-index:1; ${step.active?'box-shadow:0 2px 8px rgba(255,123,0,0.35);':''}">
+                  <i class="fas ${step.done?'fa-check':step.active?'fa-spinner fa-spin':'fa-circle'}" style="font-size:${step.active&&!step.done?'11px':'12px'};"></i>
                 </div>
                 <div style="padding-top:6px;">
-                  <div style="font-size:14px; font-weight:700; color:${step.done || step.active ? 'var(--text-primary)' : 'var(--text-tertiary)'};">${step.label}</div>
+                  <div style="font-size:14px; font-weight:700; color:${step.done||step.active?'var(--text-primary)':'var(--text-tertiary)'};">${step.label}</div>
                   ${step.time ? `<div style="font-size:12px; color:var(--text-tertiary);">${step.time}</div>` : ''}
                 </div>
               </div>
@@ -579,12 +585,12 @@ function renderOrderDetail() {
         <div style="margin:12px 16px 0; background:white; border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow-sm);">
           <div style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-tertiary); margin-bottom:12px;">Chi tiết đơn hàng</div>
           ${[
-      ['Mã đơn', `#${order.id}`],
-      ['Ngày đặt', order.date],
-      ['Giờ hẹn', order.timeSlot],
-      ['Địa chỉ', order.address],
-      ['Ghi chú', order.note || 'Không có'],
-    ].map(([label, val]) => `
+            ['Mã đơn', `#${order.id}`],
+            ['Ngày đặt', order.date],
+            ['Giờ hẹn', order.timeSlot],
+            ['Địa chỉ', order.address],
+            ['Ghi chú', order.note || 'Không có'],
+          ].map(([label, val]) => `
             <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border-light); font-size:14px;">
               <span style="color:var(--text-tertiary);">${label}</span>
               <span style="font-weight:600; color:var(--text-primary); text-align:right; max-width:60%;">${val || '-'}</span>
@@ -628,7 +634,7 @@ function renderOrderDetail() {
 function renderCustomerChat() {
   const conversations = MOCK_DATA.chatConversations;
   const unreadCount = conversations.reduce((acc, c) => acc + (c.unread || 0), 0);
-
+  
   return `
     <div class="screen active" id="screen-customer-chat" style="background:var(--bg-secondary); min-height:100vh; display:flex; flex-direction:column;">
       
@@ -659,7 +665,7 @@ function renderChatMessages() {
   const conv = MOCK_DATA.chatConversations.find(c => c.id === convId) || MOCK_DATA.chatConversations[0];
   const messages = MOCK_DATA.chatMessages[convId] || MOCK_DATA.chatMessages['conv01'];
   const color = getAvatarColor(conv.name);
-
+  
   return `
     <div class="screen active" id="screen-chat-messages" style="background:var(--bg-secondary); min-height:100vh; min-height:100dvh; display:flex; flex-direction:column;">
       
@@ -683,7 +689,7 @@ function renderChatMessages() {
       <!-- Messages -->
       <div id="messages-container" style="flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; background:var(--bg-secondary);">
         
-        <div style="text-align:center; font-size:12px; color:var(--text-tertiary); margin:8px 0;">Hôm nay, ${new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>
+        <div style="text-align:center; font-size:12px; color:var(--text-tertiary); margin:8px 0;">Hôm nay, ${new Date().toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'})}</div>
         
         ${messages.map(msg => `
           <div style="display:flex; flex-direction:column; align-items:${msg.type === 'sent' ? 'flex-end' : 'flex-start'};">
@@ -715,13 +721,13 @@ function renderChatMessages() {
 // ---- PROFILE ----
 function renderCustomerProfile() {
   const user = AppState.customer.data;
-
+  
   const menuGroups = [
     {
       items: [
         { icon: '📋', bg: '#FFF3E8', label: 'Lịch sử đơn hàng', sub: `${user.totalOrders} đơn hàng`, action: "navigateCustomer('orders')" },
-        { icon: '⭐', bg: '#FFF3C4', label: 'Điểm thưởng', sub: `${formatNumber(user.loyaltyPoints)} điểm • Hạng ${user.memberLevel}`, action: "showToast('Tính năng điểm thưởng', 'info')" },
-        { icon: '🏷️', bg: '#E8F5E9', label: 'Voucher của tôi', sub: `${MOCK_DATA.vouchers.filter(v => v.status === 'active').length} voucher hiệu lực`, action: "showScreen('customer-vouchers')" },
+        { icon: '⭐', bg: '#FFF3C4', label: 'Điểm thưởng', sub: `${formatNumber(user.loyaltyPoints)} điểm • Hạng ${user.memberLevel}`, action: "showScreen('customer-loyalty')" },
+        { icon: '🏷️', bg: '#E8F5E9', label: 'Voucher của tôi', sub: `${MOCK_DATA.vouchers.filter(v=>v.status==='active').length} voucher hiệu lực`, action: "showScreen('customer-vouchers')" },
       ]
     },
     {
@@ -740,7 +746,7 @@ function renderCustomerProfile() {
       ]
     }
   ];
-
+  
   return `
     <div class="screen active" id="screen-customer-profile" style="background:var(--bg-secondary); min-height:100vh; display:flex; flex-direction:column;">
       
@@ -765,10 +771,10 @@ function renderCustomerProfile() {
           
           <div style="display:grid; grid-template-columns:repeat(3,1fr); margin-top:20px; border-top:1px solid rgba(255,255,255,0.2); padding-top:16px; position:relative; z-index:1;">
             ${[
-      [user.totalOrders, 'Đơn hàng'],
-      [formatNumber(user.loyaltyPoints), 'Điểm thưởng'],
-      ['4.9 ⭐', 'Đánh giá'],
-    ].map(([val, label]) => `
+              [user.totalOrders, 'Đơn hàng'],
+              [formatNumber(user.loyaltyPoints), 'Điểm thưởng'],
+              ['4.9 ⭐', 'Đánh giá'],
+            ].map(([val, label]) => `
               <div style="text-align:center; padding:0 8px; border-right:1px solid rgba(255,255,255,0.2);">
                 <div style="font-size:20px; font-weight:800; color:white;">${val}</div>
                 <div style="font-size:11px; color:rgba(255,255,255,0.75); margin-top:2px;">${label}</div>
@@ -784,11 +790,11 @@ function renderCustomerProfile() {
           <div style="background:white; border-radius:var(--radius-lg); padding:16px; margin-bottom:12px; box-shadow:var(--shadow-sm);">
             <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;">
               ${[
-      ['📋', 'Lịch sử', "navigateCustomer('orders')"],
-      ['🏷️', 'Voucher', "showScreen('customer-vouchers')"],
-      ['📍', 'Địa chỉ', "showToast('Địa chỉ đã lưu', 'info')"],
-      ['🔔', 'Thông báo', "showScreen('customer-notifications')"],
-    ].map(([icon, label, action]) => `
+                ['📋', 'Lịch sử', "navigateCustomer('orders')"],
+                ['🏷️', 'Voucher', "showScreen('customer-vouchers')"],
+                ['📍', 'Địa chỉ', "showToast('Địa chỉ đã lưu', 'info')"],
+                ['🔔', 'Thông báo', "showScreen('customer-notifications')"],
+              ].map(([icon, label, action]) => `
                 <div onclick="${action}" style="display:flex; flex-direction:column; align-items:center; gap:5px; cursor:pointer; padding:8px 4px; border-radius:var(--radius-sm); transition:background 0.2s;">
                   <div style="width:48px; height:48px; background:var(--primary-light); border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; font-size:22px;">
                     ${icon}
@@ -803,7 +809,7 @@ function renderCustomerProfile() {
           ${menuGroups.map(group => `
             <div style="background:white; border-radius:var(--radius-lg); overflow:hidden; margin-bottom:12px; box-shadow:var(--shadow-sm);">
               ${group.items.map((item, i) => `
-                <button onclick="${item.action}" style="display:flex; align-items:center; gap:12px; padding:14px 16px; width:100%; border:none; background:none; cursor:pointer; text-align:left; font-family:inherit; border-bottom:${i < group.items.length - 1 ? '1px solid var(--border-light)' : 'none'}; transition:background 0.2s;">
+                <button onclick="${item.action}" style="display:flex; align-items:center; gap:12px; padding:14px 16px; width:100%; border:none; background:none; cursor:pointer; text-align:left; font-family:inherit; border-bottom:${i < group.items.length-1 ? '1px solid var(--border-light)' : 'none'}; transition:background 0.2s;">
                   <div style="width:38px; height:38px; background:${item.bg}; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
                     ${item.icon}
                   </div>
@@ -830,10 +836,88 @@ function renderCustomerProfile() {
   `;
 }
 
+// ---- LOYALTY POINTS ----
+function renderCustomerLoyalty() {
+  const user = AppState.customer.data;
+  
+  // Generating mock history since it doesn't exist in data.js
+  const history = [
+    { id: 'p1', type: 'earn', title: 'Hoàn thành dịch vụ Sửa điện', points: '+50', date: '12/04/2026', time: '10:30' },
+    { id: 'p2', type: 'earn', title: 'Hoàn thành dịch vụ Thông cống', points: '+30', date: '01/04/2026', time: '14:15' },
+    { id: 'p3', type: 'spend', title: 'Đổi Voucher Giảm 50K', points: '-200', date: '25/03/2026', time: '09:00' },
+    { id: 'p4', type: 'earn', title: 'Đăng ký tài khoản', points: '+100', date: '15/06/2023', time: '08:00' }
+  ];
+  
+  return `
+    <div class="screen active" id="screen-customer-loyalty" style="background:var(--bg-secondary); min-height:100vh; display:flex; flex-direction:column;">
+      
+      ${buildHeader({ title: 'Điểm thưởng', showBack: true, style: 'orange' })}
+      
+      <div class="scroll-content" style="flex:1; overflow-y:auto; padding-bottom:30px;">
+        
+        <!-- Large Points Card -->
+        <div style="background:var(--primary-gradient); padding:32px 20px; text-align:center; position:relative; overflow:hidden;">
+          <div style="position:absolute; top:-40px; right:-40px; width:160px; height:160px; background:rgba(255,255,255,0.08); border-radius:50%;"></div>
+          <div style="position:absolute; bottom:-60px; left:-30px; width:140px; height:140px; background:rgba(255,255,255,0.06); border-radius:50%;"></div>
+          
+          <div style="position:relative; z-index:1;">
+            <div style="width:72px; height:72px; background:white; border-radius:50%; margin:0 auto 16px; display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-md);">
+              <i class="fas fa-star" style="font-size:32px; color:var(--primary); text-shadow: 0 2px 4px rgba(255,214,0,0.3);"></i>
+            </div>
+            <div style="font-size:14px; color:var(--navy); font-weight:600; text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Điểm hiện tại</div>
+            <div style="font-size:42px; font-weight:800; color:var(--navy); line-height:1; margin-bottom:8px;">${formatNumber(user.loyaltyPoints)}</div>
+            <div style="display:inline-flex; align-items:center; gap:6px; background:var(--navy); color:white; padding:6px 16px; border-radius:var(--radius-full); font-size:13px; font-weight:700;">
+              <span>Hạng</span>
+              <span style="color:var(--primary);">${user.memberLevel}</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div style="display:flex; justify-content:center; gap:16px; margin:-24px 20px 24px; position:relative; z-index:10;">
+          <button style="flex:1; background:white; border:none; border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; align-items:center; gap:8px; cursor:pointer;" onclick="showToast('Chức năng đổi quà đang phát triển', 'info')">
+            <div style="width:40px; height:40px; border-radius:50%; background:var(--primary-light); color:var(--primary); display:flex; align-items:center; justify-content:center; font-size:18px;">🎁</div>
+            <span style="font-size:13px; font-weight:700; color:var(--text-primary);">Đổi Quà</span>
+          </button>
+          <button style="flex:1; background:white; border:none; border-radius:var(--radius-lg); padding:16px; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; align-items:center; gap:8px; cursor:pointer;" onclick="showScreen('customer-vouchers')">
+            <div style="width:40px; height:40px; border-radius:50%; background:rgba(39, 174, 96, 0.15); color:var(--success); display:flex; align-items:center; justify-content:center; font-size:18px;">🏷️</div>
+            <span style="font-size:13px; font-weight:700; color:var(--text-primary);">Đổi Mã</span>
+          </button>
+        </div>
+        
+        <!-- Points History -->
+        <div style="margin:0 16px; background:white; border-radius:var(--radius-lg); box-shadow:var(--shadow-sm); overflow:hidden;">
+          <div style="padding:16px; border-bottom:1px solid var(--border-light); display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="font-size:15px; font-weight:700; color:var(--text-primary);">Lịch sử điểm</h3>
+            <span style="font-size:12px; color:var(--text-tertiary); cursor:pointer;">Xem tất cả</span>
+          </div>
+          <div>
+            ${history.map(item => `
+              <div style="padding:16px; border-bottom:1px solid var(--border-light); display:flex; gap:12px; align-items:center;">
+                <div style="width:40px; height:40px; border-radius:50%; background:${item.type === 'earn' ? 'rgba(39, 174, 96, 0.1)' : 'rgba(235, 87, 87, 0.1)'}; color:${item.type === 'earn' ? 'var(--success)' : 'var(--danger)'}; display:flex; align-items:center; justify-content:center; font-size:16px;">
+                  <i class="fas ${item.type === 'earn' ? 'fa-arrow-down' : 'fa-arrow-up'}"></i>
+                </div>
+                <div style="flex:1;">
+                  <div style="font-size:14px; font-weight:600; color:var(--text-primary); margin-bottom:4px;">${item.title}</div>
+                  <div style="font-size:12px; color:var(--text-tertiary);">${item.time} • ${item.date}</div>
+                </div>
+                <div style="font-size:16px; font-weight:800; color:${item.type === 'earn' ? 'var(--success)' : 'var(--danger)'};">
+                  ${item.points}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  `;
+}
+
 // ---- VOUCHERS ----
 function renderCustomerVouchers() {
   const vouchers = MOCK_DATA.vouchers;
-
+  
   return `
     <div class="screen active" id="screen-customer-vouchers" style="background:var(--bg-secondary); min-height:100vh; display:flex; flex-direction:column;">
       
@@ -856,10 +940,10 @@ function renderCustomerVouchers() {
       <!-- Tab Bar -->
       <div style="display:flex; background:white; border-bottom:1px solid var(--border-light);">
         <button id="tab-available" onclick="switchVoucherTab('available')" style="flex:1; padding:12px; text-align:center; font-size:13px; font-weight:600; color:var(--primary); cursor:pointer; border:none; background:none; border-bottom:2px solid var(--primary); font-family:inherit;">
-          Có thể dùng (${vouchers.filter(v => v.status === 'active').length})
+          Có thể dùng (${vouchers.filter(v=>v.status==='active').length})
         </button>
         <button id="tab-expired" onclick="switchVoucherTab('expired')" style="flex:1; padding:12px; text-align:center; font-size:13px; font-weight:600; color:var(--text-tertiary); cursor:pointer; border:none; background:none; border-bottom:2px solid transparent; font-family:inherit;">
-          Đã hết hạn (${vouchers.filter(v => v.status === 'expired').length})
+          Đã hết hạn (${vouchers.filter(v=>v.status==='expired').length})
         </button>
       </div>
       
@@ -873,7 +957,7 @@ function renderCustomerVouchers() {
 // ---- NOTIFICATIONS ----
 function renderCustomerNotifications() {
   const notifs = MOCK_DATA.notifications;
-
+  
   return `
     <div class="screen active" id="screen-customer-notifications" style="background:var(--bg-secondary); min-height:100vh; display:flex; flex-direction:column;">
       
@@ -901,7 +985,7 @@ function renderWorkerDetail() {
   const workerId = AppState.customer.selectedWorkerId;
   const worker = MOCK_DATA.workers.find(w => w.id === workerId) || MOCK_DATA.workers[0];
   const color = getAvatarColor(worker.name);
-
+  
   return `
     <div class="screen active" id="screen-worker-detail" style="background:var(--bg-secondary); min-height:100vh; display:flex; flex-direction:column;">
       
@@ -932,10 +1016,10 @@ function renderWorkerDetail() {
       <div style="margin:-20px 16px 0; position:relative; z-index:10;">
         <div style="background:white; border-radius:var(--radius-lg); padding:16px; display:grid; grid-template-columns:repeat(3,1fr); box-shadow:var(--shadow-md); margin-bottom:12px;">
           ${[
-      [worker.rating + ' ⭐', 'Đánh giá'],
-      [worker.totalJobs, 'Đơn đã làm'],
-      [worker.distance + 'km', 'Khoảng cách'],
-    ].map(([val, label]) => `
+            [worker.rating + ' ⭐', 'Đánh giá'],
+            [worker.totalJobs, 'Đơn đã làm'],
+            [worker.distance + 'km', 'Khoảng cách'],
+          ].map(([val, label]) => `
             <div style="text-align:center; padding:0 8px; border-right:1px solid var(--border-light);">
               <div style="font-size:18px; font-weight:800; color:var(--text-primary); margin-bottom:2px;">${val}</div>
               <div style="font-size:11px; color:var(--text-tertiary);">${label}</div>
@@ -947,15 +1031,15 @@ function renderWorkerDetail() {
         <div style="background:white; border-radius:var(--radius-lg); padding:16px; margin-bottom:12px; box-shadow:var(--shadow-sm);">
           <div style="font-size:14px; font-weight:700; margin-bottom:12px;">Đánh giá khách hàng</div>
           ${[
-      { name: 'Nguyễn Thị Mai', rating: 5, text: 'Thợ làm nhanh, sạch sẽ, giá cả hợp lý. Sẽ tiếp tục ủng hộ!', time: '2 ngày trước' },
-      { name: 'Lê Văn Bình', rating: 4, text: 'Tay nghề tốt, thái độ thân thiện.', time: '1 tuần trước' },
-    ].map(r => `
+            { name: 'Nguyễn Thị Mai', rating: 5, text: 'Thợ làm nhanh, sạch sẽ, giá cả hợp lý. Sẽ tiếp tục ủng hộ!', time: '2 ngày trước' },
+            { name: 'Lê Văn Bình', rating: 4, text: 'Tay nghề tốt, thái độ thân thiện.', time: '1 tuần trước' },
+          ].map(r => `
             <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid var(--border-light);">
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
                 <div style="width:32px; height:32px; border-radius:50%; background:var(--primary-light); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:var(--primary);">${getInitials(r.name)}</div>
                 <div>
                   <div style="font-size:13px; font-weight:700;">${r.name}</div>
-                  <div style="display:flex; gap:2px;">${[...Array(r.rating)].map(() => '<i class="fas fa-star" style="font-size:11px; color:#FFB800;"></i>').join('')}${[...Array(5 - r.rating)].map(() => '<i class="far fa-star" style="font-size:11px; color:#FFB800;"></i>').join('')}</div>
+                  <div style="display:flex; gap:2px;">${[...Array(r.rating)].map(() => '<i class="fas fa-star" style="font-size:11px; color:#FFB800;"></i>').join('')}${[...Array(5-r.rating)].map(() => '<i class="far fa-star" style="font-size:11px; color:#FFB800;"></i>').join('')}</div>
                 </div>
                 <span style="margin-left:auto; font-size:11px; color:var(--text-tertiary);">${r.time}</span>
               </div>
@@ -981,7 +1065,7 @@ function renderWorkerDetail() {
 // ---- ALL WORKERS ----
 function renderWorkersList() {
   const workers = MOCK_DATA.workers;
-
+  
   return `
     <div class="screen active" id="screen-customer-workers" style="background:var(--bg-secondary); min-height:100vh; display:flex; flex-direction:column;">
       
@@ -991,7 +1075,7 @@ function renderWorkersList() {
       <div style="padding:10px 16px; background:white; border-bottom:1px solid var(--border-light); overflow-x:auto;">
         <div style="display:flex; gap:8px; min-width:max-content;">
           ${['Tất cả', 'Điện', 'Nước', 'Điện lạnh', 'Dọn dẹp', 'Đồ gỗ'].map((f, i) => `
-            <button style="padding:6px 14px; border-radius:var(--radius-full); font-size:13px; font-weight:600; cursor:pointer; border:1.5px solid ${i === 0 ? 'var(--primary)' : 'var(--border)'}; background:${i === 0 ? 'var(--primary)' : 'transparent'}; color:${i === 0 ? 'white' : 'var(--text-secondary)'}; font-family:inherit;">
+            <button style="padding:6px 14px; border-radius:var(--radius-full); font-size:13px; font-weight:600; cursor:pointer; border:1.5px solid ${i===0?'var(--primary)':'var(--border)'}; background:${i===0?'var(--primary)':'transparent'}; color:${i===0?'white':'var(--text-secondary)'}; font-family:inherit;">
               ${f}
             </button>
           `).join('')}
@@ -1007,9 +1091,9 @@ function renderWorkersList() {
 
 // ---- CUSTOMER EVENT HANDLERS ----
 
-window.navigateCustomer = function (tab) {
+window.navigateCustomer = function(tab) {
   AppState.customer.activeTab = tab;
-
+  
   const screenMap = {
     'home': 'customer-home',
     'booking': 'customer-booking',
@@ -1017,21 +1101,21 @@ window.navigateCustomer = function (tab) {
     'chat': 'customer-chat',
     'profile': 'customer-profile',
   };
-
+  
   showScreen(screenMap[tab] || 'customer-home');
 };
 
-window.selectCategory = function (catId) {
+window.selectCategory = function(catId) {
   AppState.customer.selectedCategoryId = catId;
   showScreen('customer-booking');
 };
 
-window.filterCategory = function (catId) {
+window.filterCategory = function(catId) {
   AppState.customer.selectedCategoryId = catId;
   showScreen('customer-booking');
 };
 
-window.bookService = function (serviceId) {
+window.bookService = function(serviceId) {
   const service = MOCK_DATA.services.find(s => s.id === serviceId) || MOCK_DATA.services[0];
   AppState.customer.booking.service = service;
   AppState.customer.booking.date = getCurrentDates()[0].full;
@@ -1039,12 +1123,12 @@ window.bookService = function (serviceId) {
   showScreen('booking-form');
 };
 
-window.bookWorker = function (workerId) {
+window.bookWorker = function(workerId) {
   AppState.customer.selectedWorkerId = workerId;
   bookService(MOCK_DATA.services[0].id);
 };
 
-window.selectBookingDate = function (date) {
+window.selectBookingDate = function(date) {
   AppState.customer.booking.date = date;
   document.querySelectorAll('[data-date]').forEach(el => {
     const isSelected = el.dataset.date === date;
@@ -1056,7 +1140,7 @@ window.selectBookingDate = function (date) {
   });
 };
 
-window.selectBookingTime = function (time) {
+window.selectBookingTime = function(time) {
   AppState.customer.booking.timeSlot = time;
   document.querySelectorAll('[data-time]').forEach(el => {
     const isSelected = el.dataset.time === time;
@@ -1067,7 +1151,7 @@ window.selectBookingTime = function (time) {
   });
 };
 
-window.selectAddressType = function (el, type) {
+window.selectAddressType = function(el, type) {
   el.parentElement.querySelectorAll('span').forEach(s => {
     s.style.borderColor = 'var(--border)';
     s.style.color = 'var(--text-secondary)';
@@ -1076,12 +1160,13 @@ window.selectAddressType = function (el, type) {
   el.style.color = 'var(--primary)';
 };
 
-window.confirmBooking = async function () {
+window.confirmBooking = async function() {
   showLoading();
-
+  
   try {
     const booking = AppState.customer.booking;
-    if (window.api) {
+    const token = window.api && window.api.getToken ? window.api.getToken() : null;
+    if (window.api && token && token !== 'null' && token !== 'undefined') {
       const orderData = {
         serviceName: booking.service?.name || 'Dịch vụ',
         price: booking.service?.basePrice || 150000,
@@ -1090,16 +1175,14 @@ window.confirmBooking = async function () {
         lng: 106.7009,
         note: document.getElementById('booking-note')?.value || ''
       };
-
+      
       const newOrder = await api.orders.create(orderData);
       AppState.customer.orders.unshift(newOrder); // Update local state for immediate render
     } else {
       // Fallback to mock
       await delay(1200);
-      const newId = 'TD-' + Math.floor(10000 + Math.random() * 90000);
-
       const newOrder = {
-        id: newId,
+        id: 'TD-10261',
         service: booking.service?.name || 'Dịch vụ',
         worker: { name: MOCK_DATA.workers[0].name, id: MOCK_DATA.workers[0].id },
         status: 'pending',
@@ -1109,113 +1192,117 @@ window.confirmBooking = async function () {
         totalPrice: booking.service?.basePrice || 150000,
         note: document.getElementById('booking-note')?.value || '',
       };
-
-      const newJobRequest = {
-        id: newId,
-        service: booking.service?.name || 'Dịch vụ',
-        customerName: AppState.customer.data.name || 'Khách hàng',
-        address: document.getElementById('booking-address')?.value || booking.address || 'Địa chỉ',
-        distance: '1.5',
-        scheduledTime: booking.timeSlot || '10:30',
-        scheduledDate: booking.date || 'Hôm nay',
-        price: booking.service?.basePrice || 150000,
-        timeRemaining: 30,
-        description: document.getElementById('booking-note')?.value || '',
-      };
-
-      // Update global MOCK_DATA so the Worker role can read it
-      MOCK_DATA.jobRequests.unshift(newJobRequest);
-      MOCK_DATA.orders.unshift(newOrder);
-
-      // Sync to AppState as well for local rendering
       AppState.customer.orders.unshift(newOrder);
-
-      // Sync to Storage
-      if (typeof syncMockDataToStorage === 'function') {
-        syncMockDataToStorage();
-      }
     }
-
+    
     hideLoading();
     showScreen('booking-confirm');
-  } catch (e) {
+  } catch(e) {
     hideLoading();
     showToast(e.message || 'Lỗi đặt đơn', 'error');
   }
 };
 
-window.viewOrder = function (orderId) {
+window.viewOrder = function(orderId) {
   AppState.customer.selectedOrderId = orderId;
   showScreen('order-detail');
 };
 
-window.cancelOrder = async function (orderId) {
+window.cancelOrder = async function(orderId) {
   if (!confirm('Bạn có chắc muốn hủy đơn này?')) return;
-
+  
   const order = AppState.customer.orders.find(o => o.id === orderId);
   if (order) order.status = 'cancelled';
-
+  
   showToast('Đã hủy đơn hàng', 'info');
   showScreen('customer-orders');
 };
 
-window.filterOrders = function (status, el) {
-  el.parentElement.querySelectorAll('button').forEach(b => {
-    b.style.color = 'var(--text-tertiary)';
-    b.style.borderBottomColor = 'transparent';
-  });
-  el.style.color = 'var(--primary)';
-  el.style.borderBottomColor = 'var(--primary)';
+window.filterOrders = function(status, el) {
+  AppState.customer.filterStatus = status;
+  const container = document.getElementById('app');
+  if (container) {
+    container.innerHTML = renderCustomerOrders();
+  }
 };
 
-window.openChat = function (convId) {
+window.openChat = function(convId) {
+  _loadChatMessages();
   AppState.customer.selectedConvId = convId;
   showScreen('chat-messages');
 };
 
-window.sendMessage = function () {
+// Helpers: persist messages to localStorage
+function _saveChatMessages(convId) {
+  try {
+    const all = JSON.parse(localStorage.getItem('td_chat_msgs') || '{}');
+    all[convId] = MOCK_DATA.chatMessages[convId] || [];
+    localStorage.setItem('td_chat_msgs', JSON.stringify(all));
+  } catch(e) {}
+}
+
+function _loadChatMessages() {
+  try {
+    const all = JSON.parse(localStorage.getItem('td_chat_msgs') || '{}');
+    Object.keys(all).forEach(cid => {
+      MOCK_DATA.chatMessages[cid] = all[cid];
+    });
+  } catch(e) {}
+}
+
+
+
+window.sendMessage = function() {
   const input = document.getElementById('chat-input');
   const text = input?.value?.trim();
   if (!text) return;
-
+  
   const convId = AppState.customer.selectedConvId || 'conv01';
   if (!MOCK_DATA.chatMessages[convId]) MOCK_DATA.chatMessages[convId] = [];
-
-  MOCK_DATA.chatMessages[convId].push({
+  
+  const sentMsg = {
     id: 'm' + Date.now(),
     text,
     type: 'sent',
     time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-  });
-
+  };
+  MOCK_DATA.chatMessages[convId].push(sentMsg);
+  _saveChatMessages(convId);
+  
   if (input) input.value = '';
-
-  // Re-render messages
+  
   const container = document.getElementById('messages-container');
   if (container) {
-    const msgs = MOCK_DATA.chatMessages[convId];
-    const lastMsgs = msgs.slice(-10);
-
     const newBubble = document.createElement('div');
     newBubble.style.cssText = 'display:flex; flex-direction:column; align-items:flex-end;';
     newBubble.innerHTML = `
       <div style="max-width:75%; padding:10px 14px; border-radius:16px 16px 4px 16px; font-size:14px; line-height:1.5; background:var(--primary-gradient); color:white;">
         ${text}
       </div>
-      <div style="font-size:10px; color:var(--text-tertiary); margin-top:3px;">${new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>
+      <div style="font-size:10px; color:var(--text-tertiary); margin-top:3px;">${sentMsg.time}</div>
     `;
     container.appendChild(newBubble);
     container.scrollTop = container.scrollHeight;
-
+    
     // Auto reply
     setTimeout(() => {
+      const replyTime = new Date().toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'});
+      const replyMsg = {
+        id: 'm' + Date.now(),
+        text: 'Vâng, tôi đã nhận được. Cảm ơn!',
+        type: 'received',
+        time: replyTime,
+      };
+      MOCK_DATA.chatMessages[convId].push(replyMsg);
+      _saveChatMessages(convId);
+      
       const replyBubble = document.createElement('div');
       replyBubble.style.cssText = 'display:flex; flex-direction:column; align-items:flex-start;';
       replyBubble.innerHTML = `
         <div style="max-width:75%; padding:10px 14px; border-radius:16px 16px 16px 4px; font-size:14px; line-height:1.5; background:white; color:var(--text-primary); box-shadow:var(--shadow-sm);">
           Vâng, tôi đã nhận được. Cảm ơn!
         </div>
-        <div style="font-size:10px; color:var(--text-tertiary); margin-top:3px;">vừa xong</div>
+        <div style="font-size:10px; color:var(--text-tertiary); margin-top:3px;">${replyTime}</div>
       `;
       container.appendChild(replyBubble);
       container.scrollTop = container.scrollHeight;
@@ -1223,12 +1310,12 @@ window.sendMessage = function () {
   }
 };
 
-window.viewWorkerDetail = function (workerId) {
+window.viewWorkerDetail = function(workerId) {
   AppState.customer.selectedWorkerId = workerId;
   showScreen('worker-detail');
 };
 
-window.pickImages = function () {
+window.pickImages = function() {
   showToast('Tính năng chụp ảnh cần thiết bị thực', 'info');
   const previews = document.getElementById('image-previews');
   if (previews) {
@@ -1241,22 +1328,22 @@ window.pickImages = function () {
   }
 };
 
-window.handleNotifClick = function (notifId) {
+window.handleNotifClick = function(notifId) {
   const notif = MOCK_DATA.notifications.find(n => n.id === notifId);
   if (notif?.orderId) viewOrder(notif.orderId);
   else showToast(notif?.title || 'Thông báo', 'info');
 };
 
-window.markAllRead = function () {
+window.markAllRead = function() {
   MOCK_DATA.notifications.forEach(n => n.unread = false);
   showToast('Đã đánh dấu tất cả đã đọc', 'success');
 };
 
-window.switchVoucherTab = function (tab) {
+window.switchVoucherTab = function(tab) {
   const vouchers = MOCK_DATA.vouchers.filter(v => tab === 'available' ? v.status === 'active' : v.status === 'expired');
   const list = document.getElementById('voucher-list');
   if (list) list.innerHTML = vouchers.map(v => buildVoucherCard(v)).join('');
-
+  
   ['available', 'expired'].forEach(t => {
     const btn = document.getElementById(`tab-${t}`);
     if (btn) {
@@ -1266,11 +1353,11 @@ window.switchVoucherTab = function (tab) {
   });
 };
 
-window.applyVoucherCode = function () {
+window.applyVoucherCode = function() {
   const input = document.getElementById('voucher-code-input');
   const code = input?.value?.trim().toUpperCase();
   const voucher = MOCK_DATA.vouchers.find(v => v.code === code && v.status === 'active');
-
+  
   if (voucher) {
     showToast(`Đã áp dụng ${voucher.code} - ${voucher.name}`, 'success');
     AppState.customer.booking.voucher = voucher;
@@ -1280,7 +1367,7 @@ window.applyVoucherCode = function () {
   }
 };
 
-window.handleLogout = function () {
+window.handleLogout = function() {
   AppState.isLoggedIn = false;
   AppState.currentRole = null;
   showScreen('splash');

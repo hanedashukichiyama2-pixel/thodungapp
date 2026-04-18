@@ -8,8 +8,9 @@ function buildHeader({ title = '', showBack = true, showRight = false, rightIcon
     : style === 'white' ? 'app-header white' 
     : 'app-header orange';
   
-  const textColor = (style === 'white' && !transparent) ? 'var(--text-primary)' : 'white';
-  const btnBg = (style === 'white' && !transparent) ? 'var(--bg-secondary)' : 'rgba(255,255,255,0.2)';
+  const isDarkColor = (style === 'white' && !transparent) || style === 'orange' || style === 'primary';
+  const textColor = isDarkColor ? 'var(--navy)' : 'white';
+  const btnBg = isDarkColor ? 'rgba(26,31,60,0.08)' : 'rgba(255,255,255,0.2)';
 
   return `
     <div class="${headerClass}" style="position: sticky; top: 0; z-index: 100;">
@@ -265,6 +266,81 @@ function buildChatItem(conv) {
     </div>
   `;
 }
+
+// Render address dialog
+window.showAddressDialog = function() {
+  const currentAddress = AppState.customer.data.address || '123 Lê Lợi, Quận 1, TP.HCM';
+  
+  const overlay = document.createElement('div');
+  overlay.className = 'rating-dialog';
+  overlay.innerHTML = `
+    <div class="rating-sheet" style="padding:24px 20px;">
+      <div class="sheet-handle"></div>
+      <div style="text-align:center; margin-bottom:20px;">
+        <div style="font-size:28px; margin-bottom:8px;">📍</div>
+        <h3 style="font-size:18px; font-weight:800; color:var(--text-primary);">Thay đổi địa chỉ</h3>
+        <p style="font-size:13px; color:var(--text-tertiary); margin-top:4px;">Nhập số nhà, tên đường, phường/xã</p>
+      </div>
+      
+      <div class="form-group" style="text-align:left;">
+        <label class="form-label" style="font-size:12px; color:var(--text-secondary); margin-bottom:8px; display:block; font-weight:600;">Địa chỉ hiện tại</label>
+        <div style="position:relative;">
+          <i class="fas fa-map-marker-alt" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--primary); font-size:15px;"></i>
+          <input type="text" id="new-address-input" value="${currentAddress}" 
+            style="width:100%; height:50px; border:1.5px solid var(--border); border-radius:var(--radius-md); padding:0 14px 0 42px; font-family:inherit; font-size:14px; outline:none; background:var(--bg-secondary); color:var(--text-primary); transition:all 0.2s;">
+        </div>
+      </div>
+      
+      <div style="display:flex; gap:10px; margin-top:24px;">
+        <button class="btn btn-outline" style="flex:1; border-color:var(--border); color:var(--text-primary);" onclick="closeAddressDialog()">Hủy</button>
+        <button class="btn btn-primary" style="flex:2;" onclick="saveAddressDialog()">Lưu địa chỉ</button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(overlay);
+  window._addressDialog = overlay;
+  
+  setTimeout(() => {
+    const input = document.getElementById('new-address-input');
+    if (input) {
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+    }
+  }, 100);
+  
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) closeAddressDialog();
+  });
+};
+
+window.closeAddressDialog = function() {
+  if (window._addressDialog) {
+    window._addressDialog.remove();
+    window._addressDialog = null;
+  }
+};
+
+window.saveAddressDialog = function() {
+  const input = document.getElementById('new-address-input');
+  if (input && input.value.trim()) {
+    AppState.customer.data.address = input.value.trim();
+    if (!AppState.customer.booking.address || AppState.customer.booking.address === '123 Lê Lợi, Quận 1, TP.HCM') {
+      AppState.customer.booking.address = input.value.trim();
+    }
+    
+    closeAddressDialog();
+    showToast('Đã cập nhật địa chỉ', 'success');
+    
+    if (AppState.currentScreen === 'customer-home') {
+      const container = document.getElementById('app');
+      container.innerHTML = renderCustomerHome();
+      setTimeout(() => afterScreenRender('customer-home'), 50);
+    }
+  } else {
+    showToast('Vui lòng nhập địa chỉ hợp lệ', 'error');
+  }
+};
 
 // Render rating dialog
 function showRatingDialog(orderId, workerName) {

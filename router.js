@@ -45,14 +45,14 @@ const SCREEN_RENDERERS = {
   'worker-profile': renderWorkerProfile,
 
   // Admin
-  'admin-dashboard': renderAdminDashboard,
-  'admin-orders': renderAdminOrders,
-  'admin-workers': renderAdminWorkers,
-  'admin-vouchers': renderAdminVouchers,
-  'admin-create-voucher': renderAdminCreateVoucher,
-  'admin-banners': renderAdminBanners,
-  'admin-settings': renderAdminSettings,
-  'admin-account': renderAdminAccount,
+  'admin-dashboard': function () { return window.renderAdminDashboard ? window.renderAdminDashboard() : '' },
+  'admin-orders': function () { return window.renderAdminOrders ? window.renderAdminOrders() : '' },
+  'admin-workers': function () { return window.renderAdminWorkers ? window.renderAdminWorkers() : '' },
+  'admin-vouchers': function () { return window.renderAdminVouchers ? window.renderAdminVouchers() : '' },
+  'admin-create-voucher': function () { return window.renderAdminCreateVoucher ? window.renderAdminCreateVoucher() : '' },
+  'admin-banners': function () { return window.renderAdminBanners ? window.renderAdminBanners() : '' },
+  'admin-settings': function () { return window.renderAdminSettings ? window.renderAdminSettings() : '' },
+  'admin-account': function () { return window.renderAdminAccount ? window.renderAdminAccount() : '' },
 };
 
 // Show a screen by name
