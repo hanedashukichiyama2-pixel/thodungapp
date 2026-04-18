@@ -7,7 +7,7 @@ function showToast(message, type = 'default', duration = 2500) {
   const toast = document.getElementById('toast');
   toast.textContent = message;
   toast.className = `toast ${type} show`;
-  
+
   clearTimeout(toast._timer);
   toast._timer = setTimeout(() => {
     toast.className = 'toast';
@@ -38,7 +38,7 @@ function getCurrentDates() {
   const dates = [];
   const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
   const today = new Date();
-  
+
   for (let i = 0; i < 7; i++) {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
@@ -57,7 +57,7 @@ function getCurrentDates() {
 function startJobTimer(seconds, onTick, onEnd) {
   let remaining = seconds;
   onTick(remaining);
-  
+
   const interval = setInterval(() => {
     remaining--;
     onTick(remaining);
@@ -66,7 +66,7 @@ function startJobTimer(seconds, onTick, onEnd) {
       onEnd && onEnd();
     }
   }, 1000);
-  
+
   return interval;
 }
 
@@ -99,7 +99,7 @@ function renderStars(rating, max = 5) {
 // Debounce
 function debounce(fn, delay) {
   let timer;
-  return function(...args) {
+  return function (...args) {
     clearTimeout(timer);
     timer = setTimeout(() => fn.apply(this, args), delay);
   };
@@ -135,11 +135,11 @@ function isInViewport(el) {
 
 // Create ripple effect on click
 function addRipple(el) {
-  el.addEventListener('click', function(e) {
+  el.addEventListener('click', function (e) {
     const rect = el.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    
+
     const ripple = document.createElement('span');
     ripple.style.cssText = `
       position: absolute;
@@ -156,7 +156,7 @@ function addRipple(el) {
     el.style.position = 'relative';
     el.style.overflow = 'hidden';
     el.appendChild(ripple);
-    
+
     setTimeout(() => ripple.remove(), 500);
   });
 }
@@ -172,9 +172,39 @@ function timeAgo(dateStr) {
   const now = new Date();
   const then = new Date(dateStr);
   const diff = Math.floor((now - then) / 1000);
-  
+
   if (diff < 60) return 'vừa xong';
   if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
   if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
   return `${Math.floor(diff / 86400)} ngày trước`;
 }
+
+// Extract realtime listeners into a shared global function
+window.initSocketListeners = function () {
+  if (!window.socket || window.socket._listenersBound) return;
+
+  window.socket.on('new_job_request', (job) => {
+    MOCK_DATA.jobRequests.unshift(job);
+    if (AppState.currentRole === 'worker' && AppState.currentScreen.startsWith('worker')) {
+      showScreen(AppState.currentScreen);
+      showToast('Có đơn mới xung quanh bạn!', 'info');
+    }
+  });
+
+  window.socket.on('job_accepted', (data) => {
+    const ord = AppState.customer.orders.find(o => o.id === data.jobId);
+    if (ord) {
+      ord.status = 'confirmed';
+      ord.worker = { name: 'Thợ Kỹ Thuật', id: data.workerId };
+      // Refresh if looking at customer screens
+      if (AppState.currentRole === 'customer') {
+        showToast(`Thợ đã nhận đơn ${data.jobId} của bạn!`, 'success');
+        if (AppState.currentScreen.startsWith('customer')) {
+          showScreen(AppState.currentScreen);
+        }
+      }
+    }
+  });
+
+  window.socket._listenersBound = true;
+};

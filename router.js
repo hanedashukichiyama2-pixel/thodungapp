@@ -225,6 +225,7 @@ async function initApp() {
           // Connect Socket
           const socketUrl = window.api.getSocketUrl ? window.api.getSocketUrl() : 'http://localhost:3000';
           window.socket = io(socketUrl);
+          if (window.initSocketListeners) window.initSocketListeners();
           window.socket.emit('join', { role: user.role, userId: user.id });
         }
       }

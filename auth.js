@@ -308,25 +308,8 @@ window.enterDemo = function (role) {
     const socketUrl = window.api && window.api.getSocketUrl ? window.api.getSocketUrl() : 'http://localhost:3015';
     if (!window.socket) {
       window.socket = io(socketUrl);
-
-      window.socket.on('new_job_request', (job) => {
-        MOCK_DATA.jobRequests.unshift(job);
-        if (AppState.currentRole === 'worker' && AppState.currentScreen.startsWith('worker')) {
-          showScreen(AppState.currentScreen);
-        }
-      });
-
-      window.socket.on('job_accepted', (data) => {
-        const ord = AppState.customer.orders.find(o => o.id === data.jobId);
-        if (ord) {
-          ord.status = 'confirmed';
-          ord.worker = { name: 'Thợ Kỹ Thuật (Demo)', id: data.workerId };
-        }
-        if (AppState.currentRole === 'customer' && AppState.currentScreen.startsWith('customer')) {
-          showScreen(AppState.currentScreen);
-        }
-      });
     }
+    window.initSocketListeners();
     window.socket.emit('join', { role: role, userId: 'DEMO' });
   }
 
@@ -383,6 +366,7 @@ window.handleVerifyOTP = async function () {
       if (window.io) {
         const socketUrl = window.api.getSocketUrl ? window.api.getSocketUrl() : 'http://localhost:3000';
         window.socket = io(socketUrl);
+        window.initSocketListeners();
         window.socket.emit('join', { role: res.user.role, userId: res.user.id });
       }
 
