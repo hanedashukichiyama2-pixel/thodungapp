@@ -37,9 +37,9 @@ jobs:
       - name: Initialize Capacitor
         run: |
           npx cap init Thodung com.thodung.app --web-dir www
-          sed -i 's/"appName": "Thodung"/"appName": "Thợ Đụng"/g' capacitor.config.json
           npx cap add android
           npx cap sync android
+          sed -i 's/>Thodung</>Thợ Đụng</g' android/app/src/main/res/values/strings.xml
 
       - name: Build APK
         working-directory: ./android
